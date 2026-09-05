@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>io.github.biglv666</groupId>
+    <artifactId>biglv666-spring-boot-bom</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+
+    <name>biglv666 Spring Boot Starter BOM</name>
+    <description>biglv666 全家桶版本对齐清单（BOM）：集中管理 auth-kit、api-governance、guard、web-common、state-kit、OutboxPro 六个组件的全部 artifact 版本，使用方一次 import 即可版本对齐。</description>
+    <url>https://github.com/BIGLV666/biglv666-spring-boot-bom</url>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>biglv666</id>
+            <name>LV</name>
+            <email>379299583@qq.com</email>
+            <url>https://github.com/BIGLV666</url>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:https://github.com/BIGLV666/biglv666-spring-boot-bom.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/BIGLV666/biglv666-spring-boot-bom.git</developerConnection>
+        <url>https://github.com/BIGLV666/biglv666-spring-boot-bom/tree/main</url>
+    </scm>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!--
+            六个组件的版本仅在此处维护一次。
+            各组件内部互相引用的版本（auth-kit→web-common、state-kit→web-common/auth-kit）
+            仍写在各自 pom 里；升版时按 README 的《版本对齐表》同步核对。
+        -->
+        <auth-kit.version>0.1.0</auth-kit.version>
+        <api-governance.version>0.5.0</api-governance.version>
+        <guard.version>0.2.0</guard.version>
+        <web-common.version>0.3.0</web-common.version>
+        <state-kit.version>0.1.0</state-kit.version>
+        <outboxpro.version>1.1.0</outboxpro.version>
+
+        <!-- 各组件当前编译/测试通过的 Spring Boot 基线，仅供参考：
+             本 BOM 故意不 import spring-boot-dependencies，Spring Boot 版本由使用方自选。
+             六个 starter 的容器依赖均为 provided/optional，不会向使用方传递 Boot 版本。 -->
+        <spring-boot.baseline>3.5.14</spring-boot.baseline>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- ============ web-common：统一返回体/错误码/全局异常（被 auth-kit、state-kit 依赖） ============ -->
+            <dependency>
+                <groupId>io.github.biglv666</groupId>
+                <artifactId>web-common-spring-boot-starter</artifactId>
+                <version>${web-common.version}</version>
+            </dependency>
+
+            <!-- ============ auth-kit：认证鉴权 ============ -->
+            <dependency>
+                <groupId>io.github.biglv666</groupId>
+                <artifactId>auth-kit-spring-boot-starter</artifactId>
+                <version>${auth-kit.version}</version>
+            </dependency>
+
+            <!-- ============ api-governance：API 治理（限流/指标/告警/管理接口） ============ -->
+            <dependency>
+                <groupId>io.github.biglv666</groupId>
+                <artifactId>api-governance-spring-boot-starter</artifactId>
+                <version>${api-governance.version}</version>
+            </dependency>
+
+            <!-- ============ concurrent-guard：幂等 + 分布式锁（实际坐标 guard-spring-boot-starter） ============ -->
+            <dependency>
+                <groupId>io.github.biglv666</groupId>
+                <artifactId>guard-spring-boot-starter</artifactId>
+                <version>${guard.version}</version>
+            </dependency>
+
+            <!-- ============ state-kit：声明式状态流转 ============ -->
+            <dependency>
+                <groupId>io.github.biglv666</groupId>
+                <artifactId>state-kit-spring-boot-starter</artifactId>
+                <version>${state-kit.version}</version>
+            </dependency>
+
+            <!-- ============ OutboxPro：事务消息 + RabbitMQ 可靠消费（多模块，父 pom 一并管理） ============ -->
+            <dependency>
+                <groupId>io.github.biglv666</groupId>
+                <artifactId>outboxpro-parent</artifactId>
+                <version>${outboxpro.version}</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>io.github.biglv666</groupId>
+                <artifactId>outboxpro-core</artifactId>
+                <version>${outboxpro.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.biglv666</groupId>
+                <artifactId>outboxpro-spi</artifactId>
+                <version>${outboxpro.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.biglv666</groupId>
+                <artifactId>outboxpro-persistence</artifactId>
+                <version>${outboxpro.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.biglv666</groupId>
+                <artifactId>outboxpro-persistence-mysql</artifactId>
+                <version>${outboxpro.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.biglv666</groupId>
+                <artifactId>outboxpro-transport</artifactId>
+                <version>${outboxpro.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.biglv666</groupId>
+                <artifactId>outboxpro-transport-rabbit</artifactId>
+                <version>${outboxpro.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.biglv666</groupId>
+                <artifactId>outboxpro-observability</artifactId>
+                <version>${outboxpro.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.biglv666</groupId>
+                <artifactId>outboxpro-spring-boot-autoconfigure</artifactId>
+                <version>${outboxpro.version}</version>
+            </dependency>
+            <!-- 使用方通常只需要引这一个 -->
+            <dependency>
+                <groupId>io.github.biglv666</groupId>
+                <artifactId>outboxpro-spring-boot-starter</artifactId>
+                <version>${outboxpro.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <plugins>
+            <!--
+                Maven Central 发布（单 pom 打包）：
+                token 认证（CENTRAL_USERNAME/CENTRAL_PASSWORD 即 Central 生成的用户名/密码）。
+                pom 打包无 jar，无需 source/javadoc 附件，但 pom 本身需 GPG 签名。
+            -->
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.9.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                    <tokenAuth>true</tokenAuth>
+                    <autoPublish>true</autoPublish>
+                    <waitUntil>published</waitUntil>
+                </configuration>
+            </plugin>
+            <!-- 签名 BOM pom：日常构建走 dev profile 跳过，release profile 才签名 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <gpg.skip>true</gpg.skip>
+            </properties>
+        </profile>
+        <profile>
+            <id>release</id>
+            <properties>
+                <gpg.skip>false</gpg.skip>
+            </properties>
+        </profile>
+    </profiles>
+</project>
