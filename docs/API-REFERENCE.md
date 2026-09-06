@@ -238,7 +238,7 @@ binlog 直连失效（0.2.0+）覆盖"绕过应用的写"（DBA 改库、其他�
 |---|---|---|
 | `@CacheEntity(prefix, ttl)` | TYPE | 声明实体可缓存（非 MP 项目用）；prefix 缺省类名转蛇形 |
 | `@CacheId` | FIELD | 主键字段；优先级高于 MP `@TableId` |
-| `@CachedQuery(ttl, condition, cacheNull)` | METHOD | 查询拦截：单实体 miss 才执行方法体；`List<实体>` + ID 集合参数走 per-ID 批量解析 |
+| `@CachedQuery(ttl, condition, cacheNull)` | METHOD | 查询拦截：单实体 miss 才执行方法体；`List<实体>` + ID 集合参数走 per-ID 批量解析；主键严格推导（实体实例参数或参数名=主键字段名），条件字段查询强制旁路 |
 | `@CacheInvalidate(entity)` | METHOD | 写方法成功后失效缓存 + 广播 + 延迟双删；entity 在参数无法推导时必填 |
 | `@CacheHandle(value)` | FIELD | 注入 `EntityCache<T>` 句柄（手动控制场景） |
 
