@@ -1,6 +1,6 @@
 # biglv666 Spring Boot Starter BOM
 
-biglv666 全家桶的**版本对齐清单（Bill of Materials）**：一个纯 `pom` 仓库，把六个组件的全部 artifact 版本收拢到 `<dependencyManagement>`，使用方一次 import 即版本对齐，不再逐个写版本号。
+biglv666 全家桶的**版本对齐清单（Bill of Materials）**：一个纯 `pom` 仓库，把七个组件的全部 artifact 版本收拢到 `<dependencyManagement>`，使用方一次 import 即版本对齐，不再逐个写版本号。
 
 本仓库**不包含任何 Java 代码，也不修改任何组件的代码**——组件各自独立仓库、独立发版，本仓库只做版本收口与文档整合。
 
@@ -14,6 +14,7 @@ biglv666 全家桶的**版本对齐清单（Bill of Materials）**：一个纯 `
 | web-common | `web-common-spring-boot-starter` | 0.3.0 | Web 通用封装：统一 Result、分段错误码、全局异常处理 | [BIGLV666/web-common-spring-boot-starter](https://github.com/BIGLV666/web-common-spring-boot-starter) |
 | state-kit | `state-kit-spring-boot-starter` | 0.1.0 | 声明式状态流转：yml/DSL 声明规则，CAS 保证并发正确 | [BIGLV666/state-kit-spring-boot-starter](https://github.com/BIGLV666/state-kit-spring-boot-starter) |
 | OutboxPro | `outboxpro-spring-boot-starter`（多模块，含 parent 共 10 个 artifact） | 1.1.0 | 事务消息：Outbox 模式 + RabbitMQ 可靠消费 + 死信重放 | [BIGLV666/OutboxPro](https://github.com/BIGLV666/OutboxPro) |
+| cache-kit | `cache-kit-spring-boot-starter` | 0.2.0 | 三级缓存：Caffeine→Redis→DB read-through，MP 零注解接入，广播 + 延迟双删 + binlog 直连失效 | [BIGLV666/cache-kit-spring-boot-starter](https://github.com/BIGLV666/cache-kit-spring-boot-starter) |
 
 ## 使用方式
 
@@ -50,9 +51,9 @@ biglv666 全家桶的**版本对齐清单（Bill of Materials）**：一个纯 `
 </dependencies>
 ```
 
-> **Spring Boot 版本由你决定**：本 BOM 刻意不 import `spring-boot-dependencies`。六个 starter 的容器依赖都是 `provided`/`optional`，不向使用方传递 Spring Boot 版本；各组件当前在 Boot 3.5.x 基线下编译测试（api-governance/guard 编译基线较低，但运行时跟随宿主）。
+> **Spring Boot 版本由你决定**：本 BOM 刻意不 import `spring-boot-dependencies`。七个 starter 的容器依赖都是 `provided`/`optional`，不向使用方传递 Spring Boot 版本；各组件当前在 Boot 3.5.x 基线下编译测试（api-governance/guard 编译基线较低，但运行时跟随宿主）。
 
-> **⚠️ 上架状态（2026-09-05 核验）**：auth-kit `0.1.0` 与 state-kit `0.1.0` **尚未发布到 Maven Central**（两个组件仓库也还没有发布流水线），BOM 先按目标版本收拢；在这两个组件发版并上架之前，`mvn` 解析这两个坐标会报错，CI 的 Central 存在性检查也会标红。发布步骤见各组件仓库（模式与 web-common/concurrent-guard 相同：配 secrets → 打 `v*` 标签）。
+> **⚠️ 上架状态（2026-09-05 核验）**：auth-kit `0.1.0`、state-kit `0.1.0`、cache-kit `0.2.0` **尚未发布到 Maven Central**（cache-kit 的 GitHub 远端仓库也尚未创建），BOM 先按目标版本收拢；在这些组件发版并上架之前，`mvn` 解析对应坐标会报错，CI 的 Central 存在性检查也会标红。发布步骤见各组件仓库（模式与 web-common/concurrent-guard 相同：配 secrets → 打 `v*` 标签）。
 
 ## 版本对齐表（组件间交叉依赖）
 
@@ -81,7 +82,7 @@ biglv666 全家桶的**版本对齐清单（Bill of Materials）**：一个纯 `
 
 所有组件的使用文档、API、枚举已整合进本仓库 `docs/`，推荐阅读顺序：
 
-1. [`docs/API-REFERENCE.md`](docs/API-REFERENCE.md) —— **全家桶聚合 API 参考**：六个组件的注解、核心接口、SPI、枚举值、配置前缀，一页通览；
+1. [`docs/API-REFERENCE.md`](docs/API-REFERENCE.md) —— **全家桶聚合 API 参考**：七个组件的注解、核心接口、SPI、枚举值、配置前缀，一页通览；
 2. 各组件完整文档（复制自各仓库，含原始 README 与 docs 目录）：
 
 | 组件 | 文档目录 | 亮点文档 |
@@ -92,6 +93,7 @@ biglv666 全家桶的**版本对齐清单（Bill of Materials）**：一个纯 `
 | concurrent-guard | [`docs/concurrent-guard/`](docs/concurrent-guard/) | `README.md`（唯一文档，示例齐全） |
 | web-common | [`docs/web-common/`](docs/web-common/) | `README.md`（中文主文档）、`README.en.md`（英文版） |
 | state-kit | [`docs/state-kit/`](docs/state-kit/) | `README.md`（设计决策 + yml/DSL 双通道） |
+| cache-kit | [`docs/cache-kit/`](docs/cache-kit/) | `README.md`（MP 零注解接入 + binlog 直连失效 + 配置全参考 + 性能实测 + FAQ） |
 
 各文件的来源仓库与路径见 [`docs/INDEX.md`](docs/INDEX.md)。组件仓库文档更新后，运行 `scripts/sync-docs.sh` 重新同步。
 

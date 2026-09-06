@@ -51,5 +51,8 @@ sync "web-common-spring-boot-starter/README.en.md"       web-common README.en.md
 # state-kit
 sync "state-kit-spring-boot-starter/README.md"           state-kit README.md
 
+# cache-kit
+sync "cache-kit-spring-boot-starter/README.md"           cache-kit README.md
+
 echo
 echo "同步完成。注意：docs/API-REFERENCE.md 为人工维护的聚合文档，不参与本脚本同步。"

@@ -158,6 +158,22 @@ Spring 拦截器 `preHandle` 抛异常时，Spring 只会调用它**之前**的�
 
 web-common 适配器与原生 401/403 兜底必须二选一：靠 `@ConditionalOnClass` + `@ConditionalOnMissingClass` 类级条件互斥（bean-name 存在性条件在同类内注册顺序不定，不可靠——踩坑）。
 
+### 6.10 JWT 同秒碰撞（踩坑，安全相关）
+
+JWT 模式初版 claims 只有 uid/dev/iat/exp，秒级时间戳下**同一秒内同用户同设备的两次登录签出完全相同的凭证**——两次登录共享一个 token（会话固定），且顶号逻辑会把"旧凭证"当作"当前凭证"跳过驱逐。修复：payload 加入 `jti`（内部随机 token），凭证唯一性由 SecureRandom 保证。教训：**自签发凭证必须包含不可预测的唯一成分**，时间戳精度不足。
+
+### 6.11 JWT 模式的取舍
+
+自校验（验签不读会话）换来的代价：无滑动续期、无实时活跃数据、登出/踢人必须依赖墓碑黑名单（否则凭证到期前一直有效）。收益：每请求 Redis 往返从 3 次降到 1 次。墓碑/索引统一作用于下发凭证（`TokenCodec.keyOf`），两种模式下踢人/顶号语义完全一致。
+
+### 6.12 OAuth2 的 access_token 就将会话凭证
+
+不做独立令牌体系：`/oauth2/token` 签发的 access_token 直接调用 `AuthManager.login(userId, "OAuth2:{clientId}#随机后缀")` 产生会话凭证。收益巨大：资源端校验、注解鉴权、权限体系、踢人、管理端点对 OAuth2 令牌**零改动全量生效**；device 维度按客户端区分，在线列表可按应用审计。OAuth2 只新增"授权码/刷新令牌"两个短时 KV（共用 `OAuth2KeyValueStore` SPI，授权码用 Redis GETDEL 原子单次消费防重放）。
+
+### 6.13 客户端 SPI 的边界
+
+`IdentityProvider` 只封装协议（跳转地址 + code 换档案），**用户归属归业务**（`OAuth2UserBinder`）——与"不带用户表"同一哲学。SSO 不单独实现：授权服务器（6.12）+ 客户端模式 + 共享 Redis 会话，三者组合即"一次登录处处通行"。
+
 ## 7. 并发与一致性说明
 
 - `checkLogin` 非原子（读-判-写三步）：两个并发请求都读到旧 lastActiveTime 并写回，影响仅限活跃时间精度（秒级），可接受。

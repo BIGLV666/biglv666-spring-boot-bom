@@ -226,6 +226,42 @@ yml 或 Java DSL 声明流转规则，启动时动态生成状态机 Bean；数�
 
 ---
 
+## 7. cache-kit-spring-boot-starter（三级缓存）
+
+实体元数据驱动的三级缓存：Caffeine（L1）→ Redis（L2，可选）→ DB（loader）read-through。
+MyBatis-Plus 项目零注解接入（复用 `@TableName`/`@TableId`）；一致性为秒级最终一致；
+binlog 直连失效（0.2.0+）覆盖"绕过应用的写"（DBA 改库、其他服务写入）。
+
+### 注解（`io.github.biglv666.cachekit.annotation`，均 RUNTIME）
+
+| 注解 | 目标 | 说明 |
+|---|---|---|
+| `@CacheEntity(prefix, ttl)` | TYPE | 声明实体可缓存（非 MP 项目用）；prefix 缺省类名转蛇形 |
+| `@CacheId` | FIELD | 主键字段；优先级高于 MP `@TableId` |
+| `@CachedQuery(ttl, condition, cacheNull)` | METHOD | 查询拦截：单实体 miss 才执行方法体；`List<实体>` + ID 集合参数走 per-ID 批量解析 |
+| `@CacheInvalidate(entity)` | METHOD | 写方法成功后失效缓存 + 广播 + 延迟双删；entity 在参数无法推导时必填 |
+| `@CacheHandle(value)` | FIELD | 注入 `EntityCache<T>` 句柄（手动控制场景） |
+
+### 核心接口/类
+
+- `core.EntityCache<T>` — 句柄接口：`get(id, loader)` / `evict(id)`
+- `core.TieredEntityCache` — 三级链内核（single-flight 防击穿、null 占位、TTL 抖动）
+- `core.CacheKit` — 静态门面：`withDb(...)` 作用域旁路（强一致读）
+- `channel.CacheChannel` / `channel.CaffeineChannel` / `channel.RedisChannel` — L1/L2 通道抽象
+- `metadata.EntityMetadataRegistry` — 实体元数据惰性解析（MP 注解经反射读取，不硬依赖）
+- `core.DoubleDeleteScheduler` / `core.InvalidationPublisher` / `core.InvalidationSubscriber` — 双删与广播
+- `binlog.BinlogInvalidationListener` / `BinlogLifecycle` — binlog 直连失效（0.2.0+，optional）
+
+### MP BaseMapper 自动拦截名单
+
+`selectById` / `selectBatchIds` / `updateById` / `deleteById`（零注解自动缓存与失效，批量按 per-ID 拆解 + null 占位）；条件查询永久不缓存。
+
+### 配置前缀 `cache-kit`
+
+`enabled`；`l1.*`（max-entries/ttl）；`l2.*`（ttl/jitter/null-ttl/double-delete-delay）；`broadcast.*`（enabled/topic）；`mp.*`（auto-cache-base-methods）；`binlog.*`（enabled/host/port/database/username/password/server-id）
+
+---
+
 ## 组件间集成点（全家桶咬合关系）
 
 | 集成 | 机制 |

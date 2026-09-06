@@ -31,6 +31,13 @@
 | BCrypt + PasswordEncoder SPI | 类路径有 spring-security-crypto 自动提供，否则业务自配 |
 | 登录防爆破 | `LoginAttemptGuard` 三段式插桩，Redis 计数、内存降级 |
 | 管理端点 | 在线会话查询/强制下线；静态令牌保护，默认关闭，启用必须配令牌 |
+| **记住我** | `login(userId, device, rememberMe)`，remember 会话走 `remember-timeout` 长效期 |
+| **二级认证** | `@RequireSafe` + `openSafe/isSafe/closeSafe`，敏感操作 N 分钟免二次验密 |
+| **JWT 可选模式** | `token.mode=jwt`，HS256 纯 JDK 实现；本地验签 + 墓碑黑名单，踢人/顶号语义不变 |
+| **会话并发治理** | `device-max-sessions` 按设备覆盖上限；管理端点支持逐设备踢出 |
+| **OAuth2 授权服务器** | `/oauth2/authorize` + `/oauth2/token`，authorization_code + refresh_token；**签发的 access_token 就是本组件会话凭证** |
+| **第三方登录客户端** | `IdentityProvider` SPI，内置 GitHub / 企业微信；业务只实现"档案 → userId"绑定 |
+| **单点登录** | 多应用共享 Redis 会话即 SSO；登出/踢人全局生效 + 会话事件广播 |
 
 ## 快速开始
 
@@ -40,7 +47,7 @@
 <dependency>
     <groupId>io.github.biglv666</groupId>
     <artifactId>auth-kit-spring-boot-starter</artifactId>
-    <version>0.1.0</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
@@ -146,6 +153,8 @@ auth-kit:
     - /login
 ```
 
+OAuth2 / SSO 配置见 [USAGE.md](docs/USAGE.md#9-oauth2--sso)，要点：授权服务器端点默认关闭；access_token 即本组件会话凭证，资源端无需新增校验代码。
+
 ## 下线语义对照（前端处理指南）
 
 | reason | 场景 | 前端建议 |
@@ -168,10 +177,11 @@ auth-kit:
 
 ## 测试与质量
 
-- **64 个测试全绿**：会话存储契约测试基类让内存/Redis 两套实现跑同一套用例（互为交叉验证）；Redis 用例直连真实 Redis（不可用时自动跳过）
-- **可注入时钟**：滑动续期/活跃超时/顶号驱逐用假时钟验证，测试不 sleep
+- **83 个测试全绿**：会话存储契约测试基类让内存/Redis 两套实现跑同一套用例（互为交叉验证）；Redis 用例直连真实 Redis（不可用时自动跳过）；GitHub Actions CI 带 Redis 服务容器
+- **可注入时钟**：滑动续期/活跃超时/顶号驱逐/JWT 过期用假时钟验证，测试不 sleep
 - **真实项目验证**：PaperWise（Boot 3.5 + Redis + MySQL）已完成 JWT→auth-kit 迁移，登录/顶号/登出/伪造 token 全流程实测通过，详见 [INTEGRATION.md](docs/INTEGRATION.md)
-- 设计踩坑记录（绝对有效期污染、ThreadLocal 串号、顶号排序不稳等）见 [DESIGN.md 决策记录](docs/DESIGN.md)
+- **演示工程**：[examples/auth-kit-demo](examples/auth-kit-demo)（登录/注解/二级认证/顶号一条龙 curl 演示）
+- 设计踩坑记录（绝对有效期污染、ThreadLocal 串号、JWT 同秒碰撞等）见 [DESIGN.md 决策记录](docs/DESIGN.md)
 
 ## 与四件套的关系
 
@@ -211,8 +221,8 @@ ThreadLocal 不跨线程传递。提交任务前先 `AuthKit.getLoginId()` 取�
 
 ## Roadmap
 
-- **V1.5**：记住我（设备级长效 token）、二级认证 `@RequireSafe`、JWT 可选模式（附黑名单代价说明）、会话并发治理（按设备查看/逐个踢出）
-- **V2**：`@DataScope` 行级数据权限（MyBatis-Plus 拦截器织入 + 部门树 SPI）、OAuth2/单点登录、WebFlux 支持
+- **V1.0.0（当前）**：V1 全量 + 记住我、二级认证、JWT 可选模式、会话并发治理
+- **V2**：OAuth2 / 单点登录模块（下一步大动作）、`@DataScope` 行级数据权限（MyBatis-Plus 拦截器织入 + 部门树 SPI）、WebFlux 支持
 
 ## License
 

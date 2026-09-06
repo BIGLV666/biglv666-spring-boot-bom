@@ -50,3 +50,9 @@
 | 本仓库文件 | 原始路径 | 内容 |
 |---|---|---|
 | `state-kit/README.md` | `/README.md` | 设计决策 + 快速开始 + yml/DSL 双通道 + CAS 铁律 |
+
+## cache-kit（版本 0.2.0，仓库 [BIGLV666/cache-kit-spring-boot-starter](https://github.com/BIGLV666/cache-kit-spring-boot-starter)）
+
+| 本仓库文件 | 原始路径 | 内容 |
+|---|---|---|
+| `cache-kit/README.md` | `/README.md` | 三级缓存总览 + 两种接入模式 + binlog 直连失效 + 配置全参考 + 性能实测 + FAQ |

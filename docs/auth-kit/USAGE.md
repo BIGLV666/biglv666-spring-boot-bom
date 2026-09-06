@@ -2,6 +2,8 @@
 
 本文回答三个最常见的问题：默认拦不拦截所有方法？怎么取当前用户 id？每个 API 具体怎么用？
 
+> V1.0.0 新增：记住我、二级认证 `@RequireSafe`、JWT 可选模式、按设备会话上限，见第 5-8 节。
+
 ## 1. 默认拦截语义：注册所有路径，默认不拦任何请求
 
 拦截器注册在 `/**` 上，但对一个方法做什么是**由注解决定的**，分三档：
@@ -140,6 +142,147 @@ public Result<?> login(String username, String password) {
 ```
 
 计数在 Redis（固定窗口），多实例共享；无 Redis 自动降级内存。`fail-max-attempts<=0` 完全关闭。
+
+## 5. 记住我
+
+```java
+String token = AuthKit.login(userId, DeviceType.WEB, true);   // 第三个参数 rememberMe
+```
+
+- remember 会话使用 `auth-kit.token.remember-timeout`（默认 30d）作为绝对有效期，普通会话仍用 `timeout`
+- 活跃超时判定两种会话一致（长期不活动照样过期）
+- 配合 `cookie-name` 配置把 remember token 放 Cookie，实现"关浏览器不丢登录态"
+
+## 6. 二级认证（@RequireSafe）
+
+敏感操作（改密/支付/注销）三步走：
+
+```java
+// ① 敏感端点标注解（隐含登录校验）
+@RequireSafe
+@PostMapping("/change-password")
+public Result<?> changePassword() { ... }
+
+// ② 业务方先重新验密，成功后开启安全态
+@PostMapping("/verify-password")
+public Result<?> verify(String password) {
+    if (myEncoder.matches(password, currentUser.getPassword())) {
+        AuthKit.openSafe();          // 安全态开启，默认 5 分钟内免二次
+        return Result.ok();
+    }
+    return Result.error("密码错误");
+}
+
+// ③ 有效期内访问 @RequireSafe 端点放行；未开启 → NotSafeException（403"需要安全验证"）
+AuthKit.isSafe();      // 查询当前安全态
+AuthKit.closeSafe();   // 敏感操作完成后主动关闭
+```
+
+窗口时长配置 `auth-kit.safe.duration`（默认 5m）。安全态存 Redis（多实例共享），按 **userId** 维度——换设备同样生效。
+
+## 7. JWT 可选模式
+
+```yaml
+auth-kit:
+  token:
+    mode: jwt
+    jwt-secret: "至少16字符的强随机密钥"
+```
+
+| 维度 | opaque（默认） | jwt |
+|---|---|---|
+| 凭证 | 64 字符随机串 | HS256 签名 JWT（纯 JDK 实现，零依赖） |
+| 每次请求校验 | 读会话（3 次 Redis 往返） | 本地验签 + 查墓碑（1 次 Redis 往返） |
+| 滑动续期/活跃超时 | ✅ | ❌（不读会话，无活跃数据） |
+| 踢人/顶号/登出 | ✅ | ✅（经由墓碑黑名单，语义完全一致） |
+| 在线会话列表 | 实时 | 从凭证 claims 还原（登录时间来自 iat） |
+| 密钥泄露影响 | Redis 被攻破才可伪造 | 密钥泄露可伪造任意用户，务必保密并支持轮换 |
+
+凭证唯一性由内部 jti（随机 token）保证——同一秒内同用户同设备重复登录也会得到不同凭证。
+
+## 8. 会话并发治理
+
+```yaml
+auth-kit:
+  session:
+    max-sessions-per-device: 1        # 全局默认
+    device-max-sessions:              # 按设备覆盖
+      APP: 3                          # APP 允许 3 台
+      MINI_PROGRAM: 2
+```
+
+管理端点：
+
+```bash
+curl -H "X-Auth-Kit-Token: xxx" "http://host/auth-kit/online?userId=10001"          # 在线会话
+curl -X DELETE -H "X-Auth-Kit-Token: xxx" "http://host/auth-kit/online/10001?device=APP"  # 强制下线（静默）
+curl -X POST  -H "X-Auth-Kit-Token: xxx" "http://host/auth-kit/online/10001/kick"   # 踢人（旧端收"被强制下线"文案）
+```
+
+## 9. OAuth2 / SSO
+
+三个能力共用一套会话体系，默认全关、互不依赖：
+
+### 9.1 轻量授权服务器（给别人发令牌）
+
+```yaml
+auth-kit:
+  oauth2:
+    server:
+      enabled: true
+      login-page: /login              # 未登录时跳业务登录页，登录后回 authorize 地址
+      clients:
+        app1:
+          client-secret: "app1-secret"
+          redirect-uris: [ "https://app1.example/cb" ]   # 精确匹配，防开放重定向
+          scopes: [ "profile" ]
+```
+
+流程：`GET /oauth2/authorize`（已登录签发授权码回跳；未登录跳 login-page）→
+`POST /oauth2/token`（`grant_type=authorization_code` 或 `refresh_token`，refresh 轮换）。
+
+**关键设计：签发的 access_token 就是 auth-kit 会话凭证**——第三方应用拿它直接访问你的
+受保护接口，现有拦截链/注解/权限校验零改动；device 维度为 `OAuth2:{clientId}`，
+管理端点可按应用查看/踢出在线令牌。授权码一次性消费（Redis GETDEL 原子防重放）。
+
+### 9.2 第三方登录（让别人给你发令牌）
+
+```yaml
+auth-kit:
+  oauth2:
+    client:
+      enabled: true
+      success-redirect: "/sso-done"   # 登录成功落地页（token 附在查询参数）
+      providers:
+        github:
+          client-id: xxx
+          client-secret: xxx
+          redirect-uri: "https://your-app/oauth2/callback/github"
+        wecom:
+          corp-id: "ww-xxx"
+          corp-secret: xxx
+          agent-id: "1000002"
+          redirect-uri: "https://your-app/oauth2/callback/wecom"
+```
+
+```java
+// 唯一必配的 Bean：第三方档案 → 本地 userId（查绑定表，可自动建号）
+@Bean
+public OAuth2UserBinder oauth2UserBinder() {
+    return profile -> userBindService.findUserId(profile.provider(), profile.openId());
+}
+```
+
+用户入口 `GET /oauth2/login/github` → 平台授权 → 回调 `/oauth2/callback/github`
+（state 防 CSRF + 单次消费）→ 绑定 → 签发本站会话。内置 GitHub 与企业微信；
+其他平台实现 `IdentityProvider`（authorizeUrl + exchange 两方法）注册 Bean 即接入。
+
+### 9.3 SSO（单点登录）
+
+多应用指向同一 Redis（相同 `session.key-prefix`）即共享会话；配合 9.1，把授权服务器
+部署在独立认证域名，各业务应用作为 9.2 的 client 接入，即完成"一次登录、处处通行"。
+任一应用登出/被踢，凭证全局失效；应用本地清理可监听 `AuthKitSessionEvent`
+（LOGOUT / KICKED_OUT / FORCED_LOGOUT / REPLACED）。
 
 ### 3.7 管理端点（现成 HTTP 接口，默认关闭）
 

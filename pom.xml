@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
 
     <name>biglv666 Spring Boot Starter BOM</name>
-    <description>biglv666 全家桶版本对齐清单（BOM）：集中管理 auth-kit、api-governance、guard、web-common、state-kit、OutboxPro 六个组件的全部 artifact 版本，使用方一次 import 即可版本对齐。</description>
+    <description>biglv666 全家桶版本对齐清单（BOM）：集中管理 auth-kit、api-governance、guard、web-common、state-kit、OutboxPro、cache-kit 七个组件的全部 artifact 版本，使用方一次 import 即可版本对齐。</description>
     <url>https://github.com/BIGLV666/biglv666-spring-boot-bom</url>
 
     <licenses>
@@ -40,7 +40,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!--
-            六个组件的版本仅在此处维护一次。
+            七个组件的版本仅在此处维护一次。
             各组件内部互相引用的版本（auth-kit→web-common、state-kit→web-common/auth-kit）
             仍写在各自 pom 里；升版时按 README 的《版本对齐表》同步核对。
         -->
@@ -50,6 +50,7 @@
         <web-common.version>0.3.0</web-common.version>
         <state-kit.version>0.1.0</state-kit.version>
         <outboxpro.version>1.1.0</outboxpro.version>
+        <cache-kit.version>0.2.0</cache-kit.version>
 
         <!-- 各组件当前编译/测试通过的 Spring Boot 基线，仅供参考：
              本 BOM 故意不 import spring-boot-dependencies，Spring Boot 版本由使用方自选。
@@ -92,6 +93,13 @@
                 <groupId>io.github.biglv666</groupId>
                 <artifactId>state-kit-spring-boot-starter</artifactId>
                 <version>${state-kit.version}</version>
+            </dependency>
+
+            <!-- ============ cache-kit：实体元数据驱动的三级缓存（L1→L2→DB，binlog 直连失效） ============ -->
+            <dependency>
+                <groupId>io.github.biglv666</groupId>
+                <artifactId>cache-kit-spring-boot-starter</artifactId>
+                <version>${cache-kit.version}</version>
             </dependency>
 
             <!-- ============ OutboxPro：事务消息 + RabbitMQ 可靠消费（多模块，父 pom 一并管理） ============ -->
