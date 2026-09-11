@@ -17,7 +17,7 @@
 | `@RequireLogin` | METHOD/TYPE | 要求登录 |
 | `@RequirePermission(value, mode)` | METHOD/TYPE | 权限校验，ALL/ANY |
 | `@RequireRole(value, mode)` | METHOD/TYPE | 角色校验，ALL/ANY；类级+方法级取"与" |
-| `@AuthIgnore` | 仅 METHOD | 短路一切校验（匿名放行） |
+| `@AuthIgnore` | 仅 METHOD （事务内延迟到 afterCommit，回滚不失效）| 短路一切校验（匿名放行） |
 | `@CurrentUser` | PARAMETER | 注入 `AuthUser`，属性 `required` |
 
 ### 核心接口/类
@@ -258,7 +258,7 @@ binlog 直连失效（0.2.0+）覆盖"绕过应用的写"（DBA 改库、其他�
 
 ### 配置前缀 `cache-kit`
 
-`enabled`；`l1.*`（max-entries/ttl）；`l2.*`（ttl/jitter/null-ttl/double-delete-delay）；`broadcast.*`（enabled/topic）；`mp.*`（auto-cache-base-methods）；`binlog.*`（enabled/host/port/database/username/password/server-id）
+`enabled`；`l1.*`（max-entries/ttl）；`l2.*`（ttl/jitter/null-ttl/double-delete-delay）；`broadcast.*`（enabled/topic）；`mp.*`（auto-cache-base-methods）；`tx.*`（evict-after-commit）；`binlog.*`（enabled/host/port/database/username/password/server-id）
 
 ---
 
