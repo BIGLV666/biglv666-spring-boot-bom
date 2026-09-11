@@ -167,12 +167,32 @@ cache-kit:
 
 - 仅支持**按主键定位**的查询（单条 + 主键批量 `selectBatchIds` / `@CachedQuery` 返回 `List<实体>` 且参数为 ID 集合）；
   条件查询（按手机号、状态等）**永久不缓存**——匹配集合未知且不可失效，恒回 DB
-- 批量缺失 ID 无法逐键 single-flight：并发相同批量请求各回源一次（单条 IN 语句，风暴有界）
 - 不做 write-through / write-behind：写库由业务代码完成，本组件只负责失效
 - 不接管持久层：与 MyBatis/MP 的关系仅是元数据 + AOP
 - 复合主键不支持
 - 写方法处于活动事务时，失效延迟到 **afterCommit** 执行（`cache-kit.tx.evict-after-commit`，默认开），事务回滚不失效
 - binlog 模式下主键列序号来自 `information_schema`，改表结构会自动重新解析（按表缓存的序号在进程生命周期内有效）
+
+## 已知限制与说明
+
+- **binlog 与事务时序**：MySQL 的 binlog 事件在 **COMMIT 时**才写入（事务内只进 binlog cache），监听端天然只见提交后数据，不存在"提交前触发失效"的竞态；残余的读回填竞态由双删 + TTL 兜底
+- **null 占位与 INSERT**：应用内 `mapper.insert()` 自动清除对应"已确认不存在"占位（新数据立即可见）；binlog 模式下 INSERT 行事件同样覆盖；两者皆无时，占位由 `null-ttl`（默认 30s）兜底
+- **批量缺失回源**：per-ID single-flight 保证每个缺失 ID 至多回源一次；无法保证多个**不同**批量请求合并为一条更大的 IN
+- **主键类型/表名迁移**：旧键成为孤儿由 TTL/L1 上限自然淘汰；如需立即切换，修改 `cache-kit.key-namespace` 整体弃用旧键
+
+## 可观测性（Micrometer，自动装配）
+
+宿主类路径有 micrometer-core（spring-boot-starter-actuator 自带）时自动注册 `cache-kit.*` 计数器，
+无需任何配置；也可自行实现 `CacheMetricsListener` Bean 接管。
+
+| 指标 | 含义 |
+|---|---|
+| `cache-kit.l1.requests{result=hit\|miss}` | L1 命中率 |
+| `cache-kit.l2.requests{result=hit\|miss}` | L2 命中率 |
+| `cache-kit.db.loads` | DB 回源（批量按 ID 数计） |
+| `cache-kit.null.placeholders` | null 占位写入（穿透防护触发） |
+| `cache-kit.evict.keys` | 失效键数（含双删第二次） |
+| `cache-kit.broadcast.sent` / `received{applied=true\|false}` | 广播收发——**sent 持续大于 received 说明存在广播丢失**（L1 TTL 兜底） |
 
 ## 稳健性设计
 
@@ -182,7 +202,7 @@ cache-kit:
 - **广播来源校验**：订阅器只清除键前缀能匹配已知实体的广播，防任意客户端清空缓存
 - **Jackson 无多态反序列化**：未启用 default typing，不存在反序列化 gadget 面
 
-$1
+## FAQ
 
 **Mapper XML 打包后报 `Invalid bound statement`？**
 这是 MyBatis-Plus 路径大小写问题，与本组件无关但高频踩坑：XML 放在 `resources/Mapper/`（大写）时，`classpath*:/mapper/*.xml` 在 IDE 目录模式能碰巧匹配（NTFS 大小写不敏感），打 jar 后必失败。显式配置 `mybatis-plus.mapper-locations: classpath*:/Mapper/*.xml`。
