@@ -110,7 +110,7 @@ graph TB
 |---|---|---|---|
 | auth-kit | web-common | 0.3.0 | `web-common.version` |
 | state-kit | web-common | 0.3.0 | `web-common.version` |
-| state-kit | auth-kit | 0.1.0 | `auth-kit.version` |
+| state-kit | auth-kit | 1.1.0 | `auth-kit.version` |
 
 例如把 web-common 升到 0.4.0 后：本 BOM 改 `web-common.version=0.4.0`，同时 auth-kit、state-kit 仓库的 pom 也要升到 0.4.0 并各自发版，BOM 才能进入下一个版本。
 
