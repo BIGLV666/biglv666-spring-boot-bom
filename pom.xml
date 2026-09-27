@@ -44,13 +44,13 @@
             各组件内部互相引用的版本（auth-kit→web-common、state-kit→web-common/auth-kit）
             仍写在各自 pom 里；升版时按 README 的《版本对齐表》同步核对。
         -->
-        <auth-kit.version>0.1.0</auth-kit.version>
+        <auth-kit.version>1.1.0</auth-kit.version>
         <api-governance.version>0.5.0</api-governance.version>
         <guard.version>0.2.0</guard.version>
         <web-common.version>0.3.0</web-common.version>
-        <state-kit.version>0.1.0</state-kit.version>
+        <state-kit.version>0.2.0</state-kit.version>
         <outboxpro.version>1.1.0</outboxpro.version>
-        <cache-kit.version>0.2.0</cache-kit.version>
+        <cache-kit.version>0.3.0</cache-kit.version>
 
         <!-- 各组件当前编译/测试通过的 Spring Boot 基线，仅供参考：
              本 BOM 故意不 import spring-boot-dependencies，Spring Boot 版本由使用方自选。
