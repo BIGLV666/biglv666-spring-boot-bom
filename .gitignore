@@ -1,3 +1,9 @@
 *.iml
 .idea/
 target/
+
+# Eclipse / IDE 本地产物
+.classpath
+.factorypath
+.project
+.settings/
