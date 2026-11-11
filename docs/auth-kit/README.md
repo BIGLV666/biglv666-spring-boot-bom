@@ -6,7 +6,7 @@
 > 与 Sa-Token 同路线（服务端持有会话状态），但更克制：五条 SPI、五个可选依赖、零配置可跑。
 > 与 RuoYi 类平台相反：不内置 user/role/permission 表，不跟业务库打架。
 
-文档导航：[使用手册](docs/USAGE.md)（拦截语义/API 逐个讲解） · [架构设计](docs/DESIGN.md)（数据模型/时序/决策记录） · [配置全参考](docs/CONFIGURATION.md) · [集成指南](docs/INTEGRATION.md)（四件套咬合 + PaperWise 实战）
+文档导航：[使用手册](USAGE.md)（拦截语义/API 逐个讲解） · [架构设计](https://github.com/BIGLV666/auth-kit-spring-boot-starter/blob/main/docs/DESIGN.md)（数据模型/时序/决策记录） · [配置全参考](CONFIGURATION.md) · [集成指南](INTEGRATION.md)（四件套咬合 + PaperWise 实战）
 
 ## 为什么是有状态会话而不是 JWT
 
@@ -134,13 +134,13 @@ AuthKit.hasPermission(String) / hasRole(String)       // 布尔版，不抛异�
                      └── InMemorySessionDao（无 Redis 降级）
 ```
 
-Redis key 设计与会话状态机详见 [DESIGN.md](docs/DESIGN.md)。
+Redis key 设计与会话状态机详见组件仓库 [DESIGN.md](https://github.com/BIGLV666/auth-kit-spring-boot-starter/blob/main/docs/DESIGN.md)。
 
 ## 配置
 
 零配置可跑（默认：Authorization + Bearer、30d 绝对有效期 + 7d 活跃超时、顶号、防爆破 5 次/15m、白名单 /login 与 /actuator/**）。
 
-常用定制见 [CONFIGURATION.md](docs/CONFIGURATION.md)（全部配置项 + 环境示例 + 扩展点替换），常用两项：
+常用定制见 [CONFIGURATION.md](CONFIGURATION.md)（全部配置项 + 环境示例 + 扩展点替换），常用两项：
 
 ```yaml
 auth-kit:
@@ -153,7 +153,7 @@ auth-kit:
     - /login
 ```
 
-OAuth2 / SSO 配置见 [USAGE.md](docs/USAGE.md#9-oauth2--sso)，要点：授权服务器端点默认关闭；access_token 即本组件会话凭证，资源端无需新增校验代码。
+OAuth2 / SSO 配置见 [USAGE.md](USAGE.md#9-oauth2--sso)，要点：授权服务器端点默认关闭；access_token 即本组件会话凭证，资源端无需新增校验代码。
 
 ## 下线语义对照（前端处理指南）
 
@@ -175,22 +175,14 @@ OAuth2 / SSO 配置见 [USAGE.md](docs/USAGE.md#9-oauth2--sso)，要点：授权
 | `PermissionProvider` | 权限数据源 | 无（业务必配） | 注册同类型 Bean |
 | `PasswordEncoder` | 密码编码 | BCrypt（需 security-crypto） | 注册同类型 Bean |
 
-## 测试与质量
-
-- **83 个测试全绿**：会话存储契约测试基类让内存/Redis 两套实现跑同一套用例（互为交叉验证）；Redis 用例直连真实 Redis（不可用时自动跳过）；GitHub Actions CI 带 Redis 服务容器
-- **可注入时钟**：滑动续期/活跃超时/顶号驱逐/JWT 过期用假时钟验证，测试不 sleep
-- **真实项目验证**：PaperWise（Boot 3.5 + Redis + MySQL）已完成 JWT→auth-kit 迁移，登录/顶号/登出/伪造 token 全流程实测通过，详见 [INTEGRATION.md](docs/INTEGRATION.md)
-- **演示工程**：[examples/auth-kit-demo](examples/auth-kit-demo)（登录/注解/二级认证/顶号一条龙 curl 演示）
-- 设计踩坑记录（绝对有效期污染、ThreadLocal 串号、JWT 同秒碰撞等）见 [DESIGN.md 决策记录](docs/DESIGN.md)
-
 ## 与四件套的关系
 
-- [web-common](../web-common-spring-boot-starter)：鉴权异常自动映射 Result(40100/40300)，业务零 try-catch
-- [api-governance](../api-governance-spring-boot-starte)：管理端静态令牌同思路；治理日志可带 AuthContext 用户上下文
-- [concurrent-guard](../concurrent-guard)：幂等注解 + 登录态防重放组合范式
-- [OutboxPro](../OutboxPro)：事件 payload 放 operatorId 的约定写法
+- [web-common](../web-common/README.md)：鉴权异常自动映射 Result(40100/40300)，业务零 try-catch
+- [api-governance](../api-governance/README.md)：管理端静态令牌同思路；治理日志可带 AuthContext 用户上下文
+- [concurrent-guard](../concurrent-guard/README.md)：幂等注解 + 登录态防重放组合范式
+- [OutboxPro](../outboxpro/README.md)：事件 payload 放 operatorId 的约定写法
 
-组合代码示例见 [INTEGRATION.md](docs/INTEGRATION.md)。
+组合代码示例见 [INTEGRATION.md](INTEGRATION.md)。
 
 ## FAQ
 
@@ -218,11 +210,6 @@ ThreadLocal 不跨线程传递。提交任务前先 `AuthKit.getLoginId()` 取�
 - `@Async` / 自建线程池场景 ThreadLocal 需手动传递
 - 生产环境必须配 Redis，内存实现仅限开发
 - token 明文作会话 key，如需抗 Redis 泄露可二开 SessionDao 做摘要存储
-
-## Roadmap
-
-- **V1.0.0（当前）**：V1 全量 + 记住我、二级认证、JWT 可选模式、会话并发治理
-- **V2**：OAuth2 / 单点登录模块（下一步大动作）、`@DataScope` 行级数据权限（MyBatis-Plus 拦截器织入 + 部门树 SPI）、WebFlux 支持
 
 ## License
 

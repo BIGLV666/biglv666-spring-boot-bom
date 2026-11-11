@@ -671,20 +671,9 @@ MQ 的 `traceparent`、`tracestate`、`baggage` 由框架写入消息 Header；�
 
 - [English Documentation](./README_EN.md)：English version of this document.
 - [ASYNC_ACTIONS.md](./ASYNC_ACTIONS.md)：异步方法生命周期插件完整契约。
-- [examples/api-governance-example](./examples/api-governance-example)：最小可运行示例工程。
+- [示例工程说明](example-README.md)：最小可运行示例工程。
 - 源码中各方法均附详细中文注释。
 
-## 十五、构建
+## 十五、许可证
 
-```bash
-mvnw.cmd clean install     # Windows
-./mvnw clean install       # Linux/macOS
-```
-
----
-
----
-
-## 十六、许可证
-
-本项目采用 [Apache License 2.0](./LICENSE) 开源。
+本项目采用 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0.txt) 开源。

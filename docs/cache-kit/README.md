@@ -215,18 +215,3 @@ cache-kit:
 
 **宿主没有 AOP 自动代理（切面不生效）？**
 正常 Spring Boot 应用默认启用。若用 `ApplicationContextRunner` 手动装配测试，记得加 `AopAutoConfiguration`。
-
-## 构建
-
-```bash
-mvn test          # 本地无 Redis/带 binlog 的 MySQL(3307) 时对应集成测试自动跳过
-mvn verify deploy -Prelease   # 发布（打 v* 标签由 CI 触发）
-```
-
-本地起压测依赖容器：
-
-```bash
-docker run -d --name cache-kit-mysql -p 3307:3306 \
-  -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=cachekit_test \
-  mysql:8.4 --log-bin=mysql-bin --binlog-format=ROW --server-id=1
-```

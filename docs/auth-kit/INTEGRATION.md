@@ -52,7 +52,7 @@ outboxService.publish(OrderCreatedEvent.builder()
 
 ## 5. 实战案例：PaperWise 从 JWT 迁移到 auth-kit
 
-[PaperWise](../../PaperWise)（学习卡片平台，Boot 3.5.14 / Java 17 / Redis + MySQL + MyBatis-Plus）原方案为 jjwt HS256 无状态 token。迁移总改动 **5 个文件**，业务 Controller 零改动。
+PaperWise（学习卡片平台，Boot 3.5.14 / Java 17 / Redis + MySQL + MyBatis-Plus）原方案为 jjwt HS256 无状态 token。迁移总改动 **5 个文件**，业务 Controller 零改动。
 
 ### 5.1 迁移前状态
 

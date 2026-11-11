@@ -164,19 +164,4 @@ Once the consumer project has springdoc-openapi or knife4j, the descriptions and
 
 ## Example Project
 
-[`examples/demo-app`](examples/demo-app) is a runnable, complete example (custom error codes, declarative exceptions, `@NoWrap`, etc.). First run `./mvnw install` at the repository root to install the starter locally, then run `../../mvnw -f pom.xml spring-boot:run` from the example directory.
-
-## Release
-
-Maintainers push a `v*` tag to publish to Maven Central automatically (GitHub Actions, see `.github/workflows/publish.yml`); pushes to `main` and pull requests run the full test suite via `.github/workflows/build.yml`:
-
-```bash
-git tag v0.3.0 && git push origin v0.3.0
-```
-
-## Local Build
-
-```bash
-mvnw test        # run the integration test suite (49 test cases)
-mvnw package     # package (jar + sources + javadoc)
-```
+[`examples/demo-app`](https://github.com/BIGLV666/web-common-spring-boot-starter/tree/main/examples/demo-app) is a runnable, complete example (custom error codes, declarative exceptions, `@NoWrap`, etc.). First run `./mvnw install` at the repository root to install the starter locally, then run `../../mvnw -f pom.xml spring-boot:run` from the example directory.

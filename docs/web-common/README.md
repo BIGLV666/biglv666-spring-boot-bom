@@ -164,19 +164,4 @@ web-common:
 
 ## 示例工程
 
-[`examples/demo-app`](examples/demo-app) 是可跑的完整示例（含自建错误码、声明式异常、@NoWrap 等）。先在仓库根目录 `./mvnw install` 安装 starter 到本地仓库，再进入示例目录 `../../mvnw -f pom.xml spring-boot:run`。
-
-## 发布
-
-维护者推送 `v*` 标签即自动发布到 Maven Central（GitHub Actions，见 `.github/workflows/publish.yml`）：
-
-```bash
-git tag v0.3.0 && git push origin v0.3.0
-```
-
-## 本地构建
-
-```bash
-mvnw test        # 运行集成测试（49 个用例）
-mvnw package     # 打包（jar + sources + javadoc）
-```
+[`examples/demo-app`](https://github.com/BIGLV666/web-common-spring-boot-starter/tree/main/examples/demo-app) 是可跑的完整示例（含自建错误码、声明式异常、@NoWrap 等）。先在仓库根目录 `./mvnw install` 安装 starter 到本地仓库，再进入示例目录 `../../mvnw -f pom.xml spring-boot:run`。

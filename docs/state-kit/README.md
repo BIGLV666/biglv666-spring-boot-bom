@@ -307,20 +307,7 @@ public StateStore redisStateStore() {
 | auth-kit | `AuthContext.getUserId()` 自动填充 StateTx.operatorId 与历史表 | optional，类路径检测；`operator: none` 强制关闭 |
 | api-governance | traceId 从 MDC 读取（其 trace 底座 micrometer-tracing 自动填充） | 无类依赖，MDC 有值即生效 |
 
-## 十一、测试
-
-`src/test` 覆盖 80 个用例（H2 内存库，`mvnw test` 一键运行），包括：
-
-- **并发双流转**（8 线程同 fire，CAS 保证恰好一成一败）；
-- **竞态窗口精确复现**（未提交事务持锁 + 另一线程 fire，CAS 阻塞后 WHERE 重评）；
-- CAS 失败后旧状态不可再 fire、set 列冲突时不写入；
-- 守卫拒绝后状态与附带列均未动、动作抛异常整体回滚（含动作自身的写与 set 列）；
-- fire 加入外部事务（提交/回滚两边界）与自开事务；
-- 多源流转、同一事件多边路由、String 主键、param/set 严格分离、SQL 注入列名拦截；
-- history 关闭零 DDL / 开启自动建表 / 建表幂等 / 历史与业务同事务回滚 / 轨迹查询；
-- 启动期校验每种错误形态（11 例）、自定义 StateStore SPI 整体替换、无登录态/无链路降级路径。
-
-## 十二、0.2.0 新特性详解
+## 十一、0.2.0 新特性详解
 
 ### 1. 冲突自动重试（retry）
 
@@ -420,13 +407,7 @@ StateMachine.define("reactiveOrder", ReactiveTestStatus.class)
 
 需要使用方自带 `spring-boot-starter-data-r2dbc` + 驱动（如 r2dbc-h2）。限制：嵌套聚合与 BYPASS 检测不适用于本通道；operatorId 依赖 ThreadLocal 的 auth-kit 在纯 WebFlux 下为 null。
 
-## 十三、版本路线
-
-- **V1.5**（✅ 0.2.0 已交付）：状态停留时长统计、乐观锁双保险、冲突自动重试、skipHistory/tryFire 重载
-- **V2**（✅ 0.2.0 已交付）：BYPASS 绕改检测、嵌套子状态机（会签/或签/count）、Reactive/WebFlux 支持
-- **后续候选**：tryFire 批量补偿 API、状态机可视化导出（DOT/Mermaid）、与 data-audit 的 binlog 级 BYPASS 合流
-
-## 十四、已知限制
+## 十二、已知限制
 
 - 状态机 Bean 在启动期注册，不支持运行期增删流转规则（改 yml 重启即可）；
 - Java DSL 定义 Bean 会被提前实例化，不能注入业务 Bean；

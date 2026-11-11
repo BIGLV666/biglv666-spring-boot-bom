@@ -4,10 +4,9 @@ OutboxPro 是面向 Spring Boot 的事务消息与 RabbitMQ 操作简化组件�
 
 ## 文档导航
 
-- [快速开始与公共 API](docs/OutboxPro-快速开始与公共API.md)
-- [V1 维护手册](docs/OutboxPro-维护手册.md)
-- [死信队列 (DLQ) 功能](docs/DLQ-README.md)
-- [示例应用：10 分钟跑通全流程](outboxpro-example-order/README.md)
+- [快速开始与公共 API](OutboxPro-快速开始与公共API.md)
+- [死信队列 (DLQ) 功能](DLQ-README.md)
+- [示例应用：10 分钟跑通全流程](example-order-README.md)
 
 ## 模块
 
@@ -139,7 +138,7 @@ public class OrderCreatedHandler extends AnnotatedOutboxHandler<OrderCreated> {
 ```
 
 替代手写 `EventDefinition` / `OutboxProSubscription` Bean；`retry = @RetryPolicySpec(...)` 支持
-事件级重试策略覆盖。详见 [快速开始与公共 API](docs/OutboxPro-快速开始与公共API.md) 第 8 节。
+事件级重试策略覆盖。详见 [快速开始与公共 API](OutboxPro-快速开始与公共API.md) 第 8 节。
 
 ## 运维查询端点（V1.1，默认关闭）
 
@@ -151,7 +150,7 @@ outboxpro:
 
 开启后提供 `/actuator/outboxpro-ops`：Outbox 与死信台账分页检索、消息详情，
 以及生产端 DEAD 消息重放（`POST /outbox/{eventId}/replay`）。鉴权复用 `DlqReplayAuthorizer` SPI，
-未配置授权器时默认拒绝；详见 [DLQ 功能文档](docs/DLQ-README.md)。
+未配置授权器时默认拒绝；详见 [DLQ 功能文档](DLQ-README.md)。
 
 ## 可靠性语义
 
@@ -159,25 +158,3 @@ outboxpro:
 - 消费端：至少一次执行 + `consumerName + eventId` Inbox 幂等。
 - 整体：最终一致。
 - V1 不承诺跨系统 Exactly Once。
-
-## 构建
-
-```powershell
-mvn clean verify
-mvn install -DskipTests
-```
-
-当前代码要求 Java 21。
-
-## 发布
-
-项目已按 Maven Central（Sonatype Central）要求配置：Apache-2.0 许可证、SCM 与开发者信息、
-Sources/Javadoc Jar、GPG 签名和 `central-publishing-maven-plugin` 聚合发布。
-
-日常构建使用默认 `dev` profile（跳过签名）；发布正式版本时：
-
-1. 在 `~/.m2/settings.xml` 配置 `<server><id>central</id>` 的用户名与密码（Central 生成的 token）；
-2. 本地导入 GPG 私钥；
-3. 将版本号中的 `-SNAPSHOT` 去掉后执行 `mvn -Prelease clean deploy`。
-
-

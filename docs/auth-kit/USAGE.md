@@ -314,4 +314,4 @@ curl -X DELETE -H "X-Auth-Kit-Token: 换成强随机串" \
 | 有 web-common | Result，code=40100（BE_REPLACED 用 `kicked-out-message` 文案） | Result，code=40300 | Result，code=40100 + 锁定文案 |
 | 无 web-common | HTTP 401 + `{code:401,message}` | HTTP 403 + `{code:403,message}` | HTTP 401 |
 
-前端凭 NotLoginException 的 reason 字段区分处理，对照表见 [README](../README.md#下线语义对照前端处理指南)。
+前端凭 NotLoginException 的 reason 字段区分处理，对照表见 [README](README.md#下线语义对照前端处理指南)。

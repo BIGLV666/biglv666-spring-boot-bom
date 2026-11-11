@@ -1,7 +1,7 @@
 # Guard Spring Boot Starter
 
 轻量级并发防护 Spring Boot Starter：**注解式幂等（防重复提交）** 与 **注解式分布式锁**。
-与 [api-governance](../api-governance-spring-boot-starte)（流量治理）、[OutboxPro](../OutboxPro)（消息可靠性）定位互补。
+与 [api-governance](../api-governance/README.md)（流量治理）、[OutboxPro](../outboxpro/README.md)（消息可靠性）定位互补。
 
 ## 特性
 
@@ -189,10 +189,3 @@ guard:
 | `leaseTime = -1`（默认） | Redis 锁使用 Redisson 看门狗自动续期，持锁至方法结束；本地锁忽略此属性 |
 | 锁释放 | Redis 锁在 finally 中校验当前线程持有后释放；本地锁在 finally 中释放并清理锁槽位 |
 | Redisson 初始化 | 不在 `LockAspect` / `LockTemplate` 实例化时要求 `RedissonClient`；仅实际使用 Redis 路径时校验 |
-
-## 构建
-
-```bash
-./mvnw clean verify        # 全量测试（需本机 Docker，Testcontainers 起 Redis）
-./mvnw clean install
-```

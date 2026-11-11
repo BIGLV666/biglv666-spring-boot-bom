@@ -614,17 +614,8 @@ Two internal changes worth knowing:
 
 - [中文文档](./README.md)：Chinese version of this document.
 - [ASYNC_ACTIONS.md](./ASYNC_ACTIONS.md)：async action contract.
-- [examples/api-governance-example](./examples/api-governance-example)：minimal runnable demo.
+- [Example project](example-README.md)：minimal runnable demo.
 
-## 15. Build
+## 15. License
 
-```bash
-mvnw.cmd clean install     # Windows
-./mvnw clean install       # Linux/macOS
-```
-
----
-
-## 16. License
-
-Apache License 2.0. See [LICENSE](./LICENSE).
+Apache License 2.0. See [LICENSE](https://www.apache.org/licenses/LICENSE-2.0.txt).
